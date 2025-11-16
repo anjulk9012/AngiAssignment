@@ -12,7 +12,7 @@ from airflow.operators.python import PythonOperator
 import utils.ecom_app as ecom_app
 
 
-def run_ecom_exporter(**context):
+def run_ecom_exporter(**kwargs):
     """
     Wraps ecom_exporter.main() so we can call it from Airflow.
 
@@ -65,7 +65,7 @@ with DAG(
     export_task = PythonOperator(
         task_id="run_ecom_exporter",
         python_callable=run_ecom_exporter,
-        provide_context=True,
+        #provide_context=True,
     )
 
     export_task
