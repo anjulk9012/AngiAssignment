@@ -1,0 +1,18 @@
+executor: CeleryExecutor
+
+webserver:
+  service:
+    type: NodePort   # like your previous --set webserver.service.type=NodePort
+
+postgresql:
+  enabled: false     # 🔴 turn off the broken embedded Postgres
+
+data:
+  metadataConnection:
+    user: airflow
+    pass: airflow_pass
+    protocol: mysql
+    host: airflow-mysql.airflow.svc.cluster.local
+    port: 3306
+    db: airflow
+    sslmode: disable
