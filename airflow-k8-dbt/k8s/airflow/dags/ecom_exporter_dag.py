@@ -56,7 +56,7 @@ with DAG(
     description="Export e-commerce data from Fake Store API to partitioned JSONL",
     default_args=default_args,
     start_date=datetime(2025, 11, 1),
-    schedule_interval="0 5 * * *",
+    schedule="0 5 * * *",
     catchup=False,
     max_active_runs=1,
     tags=["ecommerce", "export", "jsonl"],
