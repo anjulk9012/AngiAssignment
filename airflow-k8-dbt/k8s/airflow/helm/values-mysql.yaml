@@ -33,7 +33,7 @@ dags:
     depth: 1
 
     # IMPORTANT: this is the path where your DAG files live inside the repo
-    subPath: airflow-k8-dbt/k8s/airflow/dags
+    subPath: app/dags
 
     # how often to sync (seconds)
     wait: 10

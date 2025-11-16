@@ -1,0 +1,12 @@
+ecommerce_mysql:
+  target: dev
+  outputs:
+    dev:
+      type: mysql
+      server: "{{ env_var('MYSQL_HOST', 'localhost') }}"
+      port: 3306
+      user: "{{ env_var('MYSQL_USER', 'airflow') }}"
+      password: "{{ env_var('MYSQL_PASSWORD', 'airflow_pass') }}"
+      database: "ecommerce_raw"
+      schema: "marts"
+      threads: 4

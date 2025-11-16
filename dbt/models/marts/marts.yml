@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: dim_product
+    columns:
+      - name: product_id
+        tests: [not_null, unique]
+
+  - name: dim_user
+    columns:
+      - name: user_id
+        tests: [not_null, unique]
+
+  - name: fact_order_line
+    columns:
+      - name: order_id
+        tests: [not_null]
+      - name: user_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_user')
+              field: user_id
+      - name: product_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_product')
+              field: product_id
