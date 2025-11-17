@@ -1,9 +1,3 @@
-Here’s a full document you can drop in as `README.md` at the **root of your repo** (AngiAssignment). It pulls everything together: exporter app, MySQL schema, dbt, Airflow on Kubernetes, and GitLab CI/CD.
-
-You can tweak naming (project name, paths) but this is ready-to-use.
-
----
-
 # E-commerce Data Pipeline on Kubernetes (Airflow + dbt + MySQL)
 
 ## 1. Overview
