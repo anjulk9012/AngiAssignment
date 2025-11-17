@@ -1,11 +1,11 @@
-executor: CeleryExecutor
+executor: CeleryExecutor    # keep Celery for now, NOT Kubernetes (simpler)
 
 webserver:
   service:
-    type: NodePort   # like your previous --set webserver.service.type=NodePort
+    type: NodePort
 
 postgresql:
-  enabled: false     # 🔴 turn off the broken embedded Postgres
+  enabled: false
 
 data:
   metadataConnection:
@@ -17,27 +17,16 @@ data:
     db: airflow
     sslmode: disable
 
-# ----- DAGS FROM GIT (GITSYNC) -----
 dags:
-  # don't use a PVC for dags, just GitSync
   persistence:
     enabled: false
 
   gitSync:
     enabled: true
-
-    # your repo with dags under airflow-k8-dbt/k8s/airflow/dags
     repo: https://github.com/anjulk9012/AngiAssignment.git
-    branch: main          # change to "master" if your default branch is master
+    branch: main             # or whatever your default branch is
+    subPath: app/dags        # 👈 this is where ecom_exporter_dag.py lives now
     rev: HEAD
     depth: 1
-
-    # IMPORTANT: this is the path where your DAG files live inside the repo
-    subPath: app/dags
-
-    # how often to sync (seconds)
     wait: 10
-
-    maxFailures: 0        # retry forever
-    # sshKeySecret: ""    # only needed for private SSH repos
-    # knownHosts: ""      # only needed for SSH hardening
+    maxFailures: 0
