@@ -500,9 +500,8 @@ High-level behavior:
 
 4. Dependencies:
 
-```text
 export_task -> db_migrate_task -> dbt_debug -> dbt_test -> dbt_run -> dbt_docs
-```
+
 
 Once GitSync pulls this DAG into Airflow:
 
@@ -510,13 +509,8 @@ Once GitSync pulls this DAG into Airflow:
 * Unpause `ecom_exporter_dbt_pipeline` (or whatever DAG ID you use)
 * Trigger a run and watch the tasks.
 
----
-
 ## 9. Architecture Diagram (Conceptual)
 
-You can draw this in a tool and save as `docs/architecture.png`. Conceptually:
-
-```text
          +------------------------+
          |   Fake Store API       |
          |  (products/users/carts)|
@@ -545,7 +539,6 @@ You can draw this in a tool and save as `docs/architecture.png`. Conceptually:
                          |
                          v
                 BI / Sample Queries
-```
 
 ---
 
