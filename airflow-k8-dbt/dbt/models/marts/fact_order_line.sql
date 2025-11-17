@@ -9,7 +9,6 @@ with src as (
 )
 
 select
-    -- natural keys as FKs; surrogate key is auto in MySQL table
     order_id,
     order_ts,
     user_id,
