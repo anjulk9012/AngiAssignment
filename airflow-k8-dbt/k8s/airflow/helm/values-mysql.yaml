@@ -1,4 +1,9 @@
-executor: CeleryExecutor    # keep Celery for now, NOT Kubernetes (simpler)
+# existing bits …
+executor: CeleryExecutor
+# or KubernetesExecutor if you’ve switched, both will work with this image
+
+defaultAirflowRepository: ecom-airflow
+defaultAirflowTag: "0.1.0"
 
 webserver:
   service:

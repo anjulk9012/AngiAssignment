@@ -8,30 +8,20 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 
-# Import your exporter script as a module
-# Repo layout: app/dags/utils/ecom_app.py
-import utils.ecom_app as ecom_app
+# Import your exporter script
+# DAG file is at /opt/airflow/dags/repo/app/dags/ecom_exporter_dag.py
+# utils module is at /opt/airflow/dags/repo/app/dags/utils/ecom_app.py
+sys.path.append(os.path.dirname(__file__))  # ensure ./utils is on PYTHONPATH
+import utils.ecom_app as ecom_app  # noqa: E402
+
+# Paths for dbt inside the Airflow container (from GitSync)
+DBT_PROJECT_DIR = "/opt/airflow/dags/repo/dbt"
+DBT_PROFILES_DIR = DBT_PROJECT_DIR  # profiles.yml is in the same folder
 
 
-# ----- CONFIG: DBT PATHS -----
-# GitSync clones repo to /opt/airflow/dags/repo by default
-DBT_PROJECT_DIR = os.getenv("DBT_PROJECT_DIR", "/opt/airflow/dags/repo/dbt")
-DBT_PROFILES_DIR = os.getenv("DBT_PROFILES_DIR", DBT_PROJECT_DIR)
-
-# Environment passed to all dbt commands
-DBT_ENV = {
-    "DBT_PROFILES_DIR": DBT_PROFILES_DIR,
-    # add DB credentials here if you prefer env-vars style, e.g.:
-    # "DBT_MYSQL_USER": os.getenv("DBT_MYSQL_USER", "airflow"),
-    # "DBT_MYSQL_PASSWORD": os.getenv("DBT_MYSQL_PASSWORD", "airflow_pass"),
-}
-
-
-def run_ecom_exporter(**_kwargs):
+def run_ecom_exporter(**kwargs):
     """
-    Wraps ecom_app.main() so we can call it from Airflow.
-    We pass arguments via sys.argv because ecom_app.main()
-    uses argparse to parse CLI arguments.
+    Call ecom_app.main() with CLI-style args.
     """
     base_url = os.getenv("ECOM_BASE_URL", "https://fakestoreapi.com")
     dataset = os.getenv("ECOM_DATASET", "ecommerce")
@@ -40,12 +30,17 @@ def run_ecom_exporter(**_kwargs):
     sleep = os.getenv("HTTP_SLEEP", "0.25")
 
     argv = [
-        "ecom_app.py",
-        "--base-url", base_url,
-        "--dataset", dataset,
-        "--outdir", outdir,
-        "--timeout", timeout,
-        "--sleep", sleep,
+        "ecom_exporter.py",
+        "--base-url",
+        base_url,
+        "--dataset",
+        dataset,
+        "--outdir",
+        outdir,
+        "--timeout",
+        timeout,
+        "--sleep",
+        sleep,
         "--with-derived",
     ]
 
@@ -61,42 +56,47 @@ default_args = {
 }
 
 with DAG(
-    dag_id="ecom_exporter_dbt_dag",
-    description="Export e-commerce data from Fake Store API and run dbt pipeline",
+    dag_id="ecom_exporter_dbt_pipeline",
+    description="Export Fake Store data then run dbt models/tests/docs",
     default_args=default_args,
     start_date=datetime(2025, 11, 1),
-    schedule="0 5 * * *",   # every day at 05:00 UTC
+    schedule="0 5 * * *",  # daily at 05:00 UTC
     catchup=False,
     max_active_runs=1,
-    tags=["ecommerce", "export", "dbt", "jsonl"],
+    tags=["ecommerce", "export", "dbt"],
 ) as dag:
 
-    # 1) Export raw data to JSONL
     export_task = PythonOperator(
         task_id="run_ecom_exporter",
         python_callable=run_ecom_exporter,
     )
 
-    # 2) dbt test  (optional but nice to keep first)
-    dbt_test = BashOperator(
-        task_id="dbt_test",
-        bash_command=f"cd {DBT_PROJECT_DIR} && dbt test",
-        env=DBT_ENV,
-    )
-
-    # 3) dbt run  (build models)
+    # dbt run
     dbt_run = BashOperator(
         task_id="dbt_run",
-        bash_command=f"cd {DBT_PROJECT_DIR} && dbt run",
-        env=DBT_ENV,
+        bash_command=(
+            f"cd {DBT_PROJECT_DIR} && "
+            f"DBT_PROFILES_DIR={DBT_PROFILES_DIR} dbt run"
+        ),
     )
 
-    # 4) dbt docs generate  (build documentation)
+    # dbt test
+    dbt_test = BashOperator(
+        task_id="dbt_test",
+        bash_command=(
+            f"cd {DBT_PROJECT_DIR} && "
+            f"DBT_PROFILES_DIR={DBT_PROFILES_DIR} dbt test"
+        ),
+    )
+
+    # dbt docs generate
     dbt_docs = BashOperator(
         task_id="dbt_docs_generate",
-        bash_command=f"cd {DBT_PROJECT_DIR} && dbt docs generate",
-        env=DBT_ENV,
+        bash_command=(
+            f"cd {DBT_PROJECT_DIR} && "
+            f"DBT_PROFILES_DIR={DBT_PROFILES_DIR} dbt docs generate"
+        ),
     )
 
-    # Define task order: export -> dbt test -> dbt run -> dbt docs
-    export_task >> dbt_test >> dbt_run >> dbt_docs
+    # Orchestration: export → dbt run → dbt test → dbt docs
+    export_task >> dbt_run >> dbt_test >> dbt_docs

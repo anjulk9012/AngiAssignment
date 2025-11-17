@@ -1,12 +1,34 @@
-FROM python:3.12-slim
+# Start from official Airflow image
+FROM apache/airflow:3.0.2
 
-WORKDIR /app
+# ---- OS deps (optional, but mysql client can be useful) ----
+USER root
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        default-mysql-client \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
-RUN pip install --no-cache-dir requests
+# ---- Python deps: install as airflow user (required by this image) ----
+USER airflow
 
-# Copy your exporter script (adjust path if needed)
-# If ecom_app.py is your exporter, keep the name consistent
-COPY airflow-k8-dbt/k8s/airflow/dags/utils/ecom_app.py ./ecom_exporter.py
+RUN pip install --no-cache-dir \
+      requests \
+      dbt-core \
+      dbt-mysql
 
-CMD ["python", "ecom_exporter.py"]
+# ---- Copy dbt project into image ----
+# Your repo structure has "dbt" at the root:
+#   dbt/
+#     dbt_project.yml
+#     profiles.yml
+#     models/
+COPY dbt /opt/airflow/dbt
+
+# Tell dbt where profiles.yml lives
+ENV DBT_PROFILES_DIR=/opt/airflow/dbt
+
+# ---- Optional: copy SQL migrations (if you want to use them elsewhere) ----
+COPY db/ecommerce /opt/airflow/db/ecommerce
+
+# We do NOT override CMD/ENTRYPOINT: Airflow's own entrypoint will still run
+# webserver, scheduler, workers, etc. as configured by the Helm chart.
