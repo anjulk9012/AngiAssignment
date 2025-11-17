@@ -43,7 +43,7 @@ def run_ecom_exporter(**kwargs):
 default_args = {
     "owner": "data-eng",
     "depends_on_past": False,
-    "retries": 1,
+    "retries": 0,
     "retry_delay": timedelta(minutes=1),
 }
 
