@@ -44,7 +44,7 @@ default_args = {
     "owner": "data-eng",
     "depends_on_past": False,
     "retries": 1,
-    "retry_delay": timedelta(minutes=5),
+    "retry_delay": timedelta(minutes=1),
 }
 
 # Path to dbt project inside the Airflow worker container
