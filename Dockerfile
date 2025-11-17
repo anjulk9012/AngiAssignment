@@ -14,4 +14,5 @@ USER airflow
 RUN pip install --no-cache-dir \
       requests \
       dbt-core \
-      dbt-mysql
+      dbt-mysql \
+      protobuf

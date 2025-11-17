@@ -3,7 +3,7 @@ executor: CeleryExecutor
 # or KubernetesExecutor if you’ve switched, both will work with this image
 
 defaultAirflowRepository: ecom-airflow
-defaultAirflowTag: "0.1.0"
+defaultAirflowTag: "0.2.0"
 
 webserver:
   service:
