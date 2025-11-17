@@ -15,20 +15,3 @@ RUN pip install --no-cache-dir \
       requests \
       dbt-core \
       dbt-mysql
-
-# ---- Copy dbt project into image ----
-# Your repo structure has "dbt" at the root:
-#   dbt/
-#     dbt_project.yml
-#     profiles.yml
-#     models/
-COPY dbt /opt/airflow/dbt
-
-# Tell dbt where profiles.yml lives
-ENV DBT_PROFILES_DIR=/opt/airflow/dbt
-
-# ---- Optional: copy SQL migrations (if you want to use them elsewhere) ----
-COPY db/ecommerce /opt/airflow/db/ecommerce
-
-# We do NOT override CMD/ENTRYPOINT: Airflow's own entrypoint will still run
-# webserver, scheduler, workers, etc. as configured by the Helm chart.
