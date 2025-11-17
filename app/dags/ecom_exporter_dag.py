@@ -48,7 +48,7 @@ default_args = {
 }
 
 # Path to dbt project inside the Airflow worker container
-DBT_DIR = "/opt/airflow/dags/repo/dbt"
+DBT_DIR = "/opt/airflow/dags/repo/airflow-k8-dbt/dbt"
 
 with DAG(
     dag_id="ecom_exporter_dbt_pipeline",
